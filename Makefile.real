@@ -92,11 +92,11 @@ install: modules
 	@$(MAKE) -C $(KLIB_BUILD) M=$(BACKPORT_DIR)			\
 		INSTALL_MOD_DIR=$(KMODDIR) $(KMODPATH_ARG)		\
 		modules_install
-	@./scripts/blacklist.sh $(KLIB)/ $(KLIB)/$(KMODDIR)
-	@./scripts/compress_modules.sh $(KLIB)/$(KMODDIR)
-	@./scripts/check_depmod.sh
+	# @./scripts/blacklist.sh $(KLIB)/ $(KLIB)/$(KMODDIR)
+	# @./scripts/compress_modules.sh $(KLIB)/$(KMODDIR)
+	# @./scripts/check_depmod.sh
 	# @/sbin/depmod -a
-	@./scripts/update-initramfs.sh $(KLIB)
+	# @./scripts/update-initramfs.sh $(KLIB)
 	@echo
 	@echo Your backported driver modules should be installed now.
 	@echo Reboot.
@@ -107,9 +107,9 @@ modules_install: install
 
 .PHONY: uninstall
 uninstall:
-	@./scripts/uninstall.sh
+	# @./scripts/uninstall.sh
 	# @/sbin/depmod -a
-	@./scripts/update-initramfs.sh $(KLIB)
+	# @./scripts/update-initramfs.sh $(KLIB)
 	@echo
 	@echo Your backported driver modules should be uninstalled now.
 	@echo Reboot.

@@ -164,7 +164,7 @@ struct i2c_driver {
 	/* Notifies the driver that a new bus has appeared. You should avoid
 	 * using this, it will be removed in a near future.
 	 */
-	int (*attach_adapter)(struct i2c_adapter *) __deprecated;
+	int (*attach_adapter)(struct i2c_adapter *);
 
 	/* Standard driver model interfaces */
 	int (*probe)(struct i2c_client *, const struct i2c_device_id *);

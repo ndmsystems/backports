@@ -481,6 +481,8 @@ static const char *i2c_devs[128] = {
 	[0xa0 >> 1] = "eeprom",
 	[0xc0 >> 1] = "tuner",
 	[0xc2 >> 1] = "tuner",
+	[0x74 >> 1] = "tuner",
+	[0x30 >> 1] = "demod",
 };
 
 /*
@@ -491,7 +493,12 @@ void cx231xx_do_i2c_scan(struct cx231xx *dev, int i2c_port)
 {
 	unsigned char buf;
 	int i, rc;
-	struct i2c_client client;
+	struct i2c_adapter *adap;
+	struct i2c_msg msg = {
+		.flags = I2C_M_RD,
+		.len = 1,
+		.buf = &buf,
+	};
 
 	if (!i2c_scan)
 		return;
@@ -499,12 +506,12 @@ void cx231xx_do_i2c_scan(struct cx231xx *dev, int i2c_port)
 	/* Don't generate I2C errors during scan */
 	dev->i2c_scan_running = true;
 
-	memset(&client, 0, sizeof(client));
-	client.adapter = cx231xx_get_i2c_adap(dev, i2c_port);
+	adap = cx231xx_get_i2c_adap(dev, i2c_port);
 
 	for (i = 0; i < 128; i++) {
-		client.addr = i;
-		rc = i2c_master_recv(&client, &buf, 0);
+		msg.addr = i;
+		rc = i2c_transfer(adap, &msg, 1);
+
 		if (rc < 0)
 			continue;
 		dev_info(dev->dev,

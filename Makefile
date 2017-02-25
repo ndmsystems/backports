@@ -9,15 +9,17 @@ SHELL := /bin/bash
 BACKPORT_DIR := $(shell pwd)
 
 KMODDIR ?= updates
-ifneq ($(origin KLIB), undefined)
-KMODPATH_ARG := "INSTALL_MOD_PATH=$(KLIB)"
-else
-KLIB := /lib/modules/$(shell uname -r)/
+#ifneq ($(origin KLIB), undefined)
+#KMODPATH_ARG := "INSTALL_MOD_PATH=$(KLIB)"
+#else
+#KLIB := /lib/modules/$(shell uname -r)/
 KMODPATH_ARG :=
-endif
-KLIB_BUILD ?= $(KLIB)/build/
+#endif
+KLIB_BUILD ?= $(BACKPORT_DIR)/build/
 KERNEL_CONFIG := $(KLIB_BUILD)/.config
 KERNEL_MAKEFILE := $(KLIB_BUILD)/Makefile
+KLIB := $(BACKPORT_DIR)/install/
+KMODPATH_ARG := "INSTALL_MOD_PATH=$(KLIB)"
 CONFIG_MD5 := $(shell md5sum $(KERNEL_CONFIG) 2>/dev/null | sed 's/\s.*//')
 
 export KLIB KLIB_BUILD BACKPORT_DIR KMODDIR KMODPATH_ARG
@@ -35,6 +37,7 @@ mrproper:
 	@rm -f .config
 	@rm -f .kernel_config_md5 Kconfig.versions Kconfig.kernel
 	@rm -f backport-include/backport/autoconf.h
+	@rm -rf install
 
 .DEFAULT:
 	@set -e ; test -f .local-symbols || (						\

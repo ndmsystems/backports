@@ -176,6 +176,13 @@ static struct lgdt3306a_config hauppauge_955q_lgdt3306a_config = {
 	.xtalMHz            = 25,
 };
 
+static struct r820t_config r828d_config = {
+	.i2c_addr = 0x3a,
+	.xtal = 16000000,
+	.max_i2c_msg_len = 2,
+	.rafael_chip = CHIP_R828D,
+};
+
 static inline void print_err_status(struct cx231xx *dev, int packet, int status)
 {
 	char *errmsg = "Unknown";
@@ -919,7 +926,6 @@ static int dvb_init(struct cx231xx *dev)
 	case CX231XX_BOARD_ASTROMETA_T2HYBRID:
 	{
 		struct mn88473_config mn88473_config = {};
-		struct r820t_config r820t_config = {};
 		struct i2c_board_info info = {};
 		struct i2c_client *client;
 
@@ -950,17 +956,11 @@ static int dvb_init(struct cx231xx *dev)
 
 		dvb->i2c_client_demod = client;
 		dev->dvb->frontend->ops.i2c_gate_ctrl = NULL;
-		dvb->frontend->callback = cx231xx_tuner_callback;
+		dvb->frontend->callback = NULL;
 
 		/* attach tuner chip */
-		memset(&r820t_config, 0, sizeof(struct r820t_config));
-		r820t_config.i2c_addr = dev->board.tuner_addr;
-		r820t_config.xtal = 16000000;
-		r820t_config.max_i2c_msg_len = 2;
-		r820t_config.rafael_chip = CHIP_R828D;
-
 		dvb_attach(r820t_attach, dev->dvb->frontend, tuner_i2c,
-			   &r820t_config);
+			   &r828d_config);
 
 		/* Use tuner to get the signal strength */
 		dev->dvb->frontend->ops.read_signal_strength =
