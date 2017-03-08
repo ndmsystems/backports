@@ -859,18 +859,9 @@ struct cx231xx_board cx231xx_boards[] = {
 		.demod_i2c_master = I2C_1_MUX_1,
 		.has_dvb = 1,
 		.demod_addr = 0x18,
-		.norm = V4L2_STD_PAL,
-#if 0
-		.ir_i2c_master = I2C_2,
-		.rc_map_name = RC_MAP_LIRC,
-#endif
+		.norm = V4L2_STD_NTSC,
 
 		.input = {{
-			.type = CX231XX_VMUX_TELEVISION,
-			.vmux = CX231XX_VIN_1_3,
-			.amux = CX231XX_AMUX_VIDEO,
-			.gpio = NULL,
-		}, {
 			.type = CX231XX_VMUX_COMPOSITE1,
 			.vmux = CX231XX_VIN_2_1,
 			.amux = CX231XX_AMUX_LINE_IN,
