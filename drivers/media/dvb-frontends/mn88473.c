@@ -463,6 +463,42 @@ err:
 	return ret;
 }
 
+static int mn88473_read_signal_strength(struct dvb_frontend *fe, u16 *strength)
+{
+	struct dtv_frontend_properties *c = &fe->dtv_property_cache;
+
+	if (c->strength.stat[0].scale == FE_SCALE_RELATIVE)
+		*strength = c->strength.stat[0].uvalue;
+	else
+		*strength = 0;
+
+	return 0;
+}
+
+static int mn88473_read_snr(struct dvb_frontend *fe, u16 *snr)
+{
+	struct dtv_frontend_properties *c = &fe->dtv_property_cache;
+
+	if (c->cnr.stat[0].scale == FE_SCALE_DECIBEL)
+		*snr = div_s64(c->cnr.stat[0].svalue, 100);
+	else
+		*snr = 0;
+
+	return 0;
+}
+
+static int mn88473_read_ber(struct dvb_frontend *fe, u32 *ber)
+{
+	struct dtv_frontend_properties *c = &fe->dtv_property_cache;
+
+	if (c->post_bit_error.stat[0].scale == FE_SCALE_COUNTER)
+		*ber = c->post_bit_error.stat[0].uvalue;
+	else
+		*ber = 0;
+
+	return 0;
+}
+
 static int mn88473_init(struct dvb_frontend *fe)
 {
 	struct i2c_client *client = fe->demodulator_priv;
@@ -620,6 +656,10 @@ static const struct dvb_frontend_ops mn88473_ops = {
 	.set_frontend = mn88473_set_frontend,
 
 	.read_status = mn88473_read_status,
+
+	.read_ber = mn88473_read_ber,
+	.read_signal_strength = mn88473_read_signal_strength,
+	.read_snr = mn88473_read_snr,
 };
 
 static int mn88473_probe(struct i2c_client *client,
