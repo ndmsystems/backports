@@ -280,7 +280,7 @@ config DVB_USB_PCTV452E
 	  Say Y if you own such a device and want to use it.
 
 config DVB_USB_DW2102
-	depends on !KERNEL_3_8
+	# depends on !KERNEL_3_8
 	tristate "DvbWorld & TeVii DVB-S/S2 USB2.0 support"
 	depends on m
 	depends on DVB_USB
@@ -300,6 +300,7 @@ config DVB_USB_DW2102
 	select DVB_STV0900 if MEDIA_SUBDRV_AUTOSELECT
 	select DVB_M88RS2000 if MEDIA_SUBDRV_AUTOSELECT
 	select DVB_M88DS3103 if MEDIA_SUBDRV_AUTOSELECT
+	select DVB_CXD2820R if MEDIA_SUBDRV_AUTOSELECT
 	help
 	  Say Y here to support the DvbWorld, TeVii, Prof, TechnoTrend
 	  DVB-S/S2 USB2.0 receivers.

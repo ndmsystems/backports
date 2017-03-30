@@ -1,5 +1,5 @@
 config IR_IMG
-	depends on !KERNEL_3_5
+	# depends on !KERNEL_3_5
 	tristate "ImgTec IR Decoder"
 	depends on m
 	depends on RC_CORE

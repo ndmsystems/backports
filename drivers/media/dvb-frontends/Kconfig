@@ -40,7 +40,7 @@ config DVB_STV6110x
 	  A Silicon tuner that supports DVB-S and DVB-S2 modes
 
 config DVB_M88DS3103
-	depends on !KERNEL_3_8
+	# depends on !KERNEL_3_8
 	tristate "Montage Technology M88DS3103"
 	depends on m
 	depends on DVB_CORE && I2C && I2C_MUX
@@ -287,7 +287,7 @@ config DVB_SI21XX
 	  A DVB-S tuner module. Say Y when you want to support this frontend.
 
 config DVB_TS2020
-	depends on !KERNEL_3_8
+	# depends on !KERNEL_3_8
 	tristate "Montage Tehnology TS2020 based tuners"
 	depends on m
 	depends on DVB_CORE && I2C
@@ -314,7 +314,7 @@ config DVB_MB86A16
 	  Say Y when you want to support this frontend.
 
 config DVB_TDA10071
-	depends on !KERNEL_3_4
+	# depends on !KERNEL_3_4
 	tristate "NXP TDA10071"
 	depends on m
 	depends on DVB_CORE && I2C

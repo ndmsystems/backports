@@ -169,7 +169,7 @@ config USB_GSPCA_OV519
 	  module will be called gspca_ov519.
 
 config USB_GSPCA_OV534
-	depends on !KERNEL_3_5
+	# depends on !KERNEL_3_5
 	tristate "OV534 OV772x USB Camera Driver"
 	depends on m
 	depends on VIDEO_V4L2 && USB_GSPCA

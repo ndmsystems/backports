@@ -179,7 +179,7 @@ config IR_ENE
 	   module will be called ene_ir.
 
 config IR_HIX5HD2
-	depends on !KERNEL_3_7
+	# depends on !KERNEL_3_7
 	depends on CONFIG_MFD_SYSCON
 	tristate "Hisilicon hix5hd2 IR remote control"
 	depends on m
