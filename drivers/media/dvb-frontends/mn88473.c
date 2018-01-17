@@ -223,9 +223,17 @@ static int mn88473_set_frontend(struct dvb_frontend *fe)
 	if (ret)
 		goto err;
 
-	/* PLP ID write in 0x36 register(MPLP) */
+	/* PLP Number and ID write in 0x32 and 0x36 registers(MPLP) */
 	if (c->delivery_system == SYS_DVBT2) {
-		ret = regmap_write(dev->regmap[2], 0x36, c->stream_id);
+		/* PLP-index-number */
+		ret = regmap_write(dev->regmap[2], 0x32,
+			(c->stream_id == NO_STREAM_ID_FILTER) ? 0x80 : 0);
+		if (ret)
+			goto err;
+
+		/* PLP-ID */
+		ret = regmap_write(dev->regmap[2], 0x36,
+			(c->stream_id == NO_STREAM_ID_FILTER) ? 0 : c->stream_id);
 		if (ret)
 			goto err;
 	}
