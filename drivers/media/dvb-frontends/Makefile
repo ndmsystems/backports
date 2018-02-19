@@ -124,3 +124,4 @@ obj-$(CPTCFG_DVB_HORUS3A) += horus3a.o
 obj-$(CPTCFG_DVB_ASCOT2E) += ascot2e.o
 obj-$(CPTCFG_DVB_MN88472) += mn88472.o
 obj-$(CPTCFG_DVB_MN88473) += mn88473.o
+obj-$(CPTCFG_DVB_SI2183) += si2183.o

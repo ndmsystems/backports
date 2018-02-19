@@ -110,13 +110,15 @@ static int av201x_wrtable(struct av201x_priv *priv,
 	return 0;
 }
 
-static void av201x_release(struct dvb_frontend *fe)
+static int av201x_release(struct dvb_frontend *fe)
 {
 	struct av201x_priv *priv = fe->tuner_priv;
 	dev_dbg(&priv->i2c->dev, "%s()\n", __func__);
 
 	kfree(fe->tuner_priv);
 	fe->tuner_priv = NULL;
+
+	return 0;
 }
 
 static int av201x_init(struct dvb_frontend *fe)
@@ -229,7 +231,7 @@ static  int   AV201x_level_dBm_10[] = {    90, -50,  -263, -361, -463, -563, -66
 
 static int av201x_get_rf_strength(struct dvb_frontend *fe, u16 *st)
 {
-	struct av201x_priv *priv = fe->tuner_priv;
+	/* struct av201x_priv *priv = fe->tuner_priv; */
 	struct dtv_frontend_properties *c = &fe->dtv_property_cache;
 	int   if_agc, index, table_length, slope, *x, *y;
 
