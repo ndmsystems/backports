@@ -63,6 +63,9 @@ static void i2c_exit(void) {}
 static int i2c_dev_init(void) { return 0; }
 static void i2c_dev_exit(void) {}
 #endif
+#ifndef CPTCFG_FW_LOADER_USER_HELPER
+#define CPTCFG_FW_LOADER_USER_HELPER
+#endif
 #ifdef CPTCFG_FW_LOADER_USER_HELPER
 extern int firmware_class_init(void);
 extern void firmware_class_exit(void);
