@@ -13,7 +13,7 @@
  */
 
 #include "si2183.h"
-#include "media/dvb_frontend.h"
+#include "dvb_frontend.h"
 #include <linux/firmware.h>
 #include <linux/i2c-mux.h>
 
@@ -1186,13 +1186,25 @@ static int si2183_get_algo(struct dvb_frontend *fe)
 }
 
 static int si2183_set_property(struct dvb_frontend *fe,
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 11, 0)
 		u32 cmd, u32 data)
+#else
+		struct dtv_property *p)
+#endif
 {
 	int ret = 0;
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 11, 0)
 	switch (cmd) {
+#else
+	switch (p->cmd) {
+#endif
 	case DTV_DELIVERY_SYSTEM:
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 11, 0)
 		switch (data) {
+#else
+		switch (p->u.data) {
+#endif
 		case SYS_DVBS:
 		case SYS_DVBS2:
 		case SYS_DSS:
@@ -1330,6 +1342,7 @@ err:
 	return ret;
 }
 
+#if 0
 static void si2183_spi_read(struct dvb_frontend *fe, struct ecp3_info *ecp3inf)
 {
 	struct i2c_client *client = fe->demodulator_priv;
@@ -1349,7 +1362,7 @@ static void si2183_spi_write(struct dvb_frontend *fe,struct ecp3_info *ecp3inf)
 	dev->write_properties(client->adapter,ecp3inf->reg, ecp3inf->data);
 	return ;
 }
-
+#endif
 
 static const struct dvb_frontend_ops si2183_ops = {
 	.delsys = {SYS_DVBT, SYS_DVBT2,
@@ -1406,9 +1419,10 @@ static const struct dvb_frontend_ops si2183_ops = {
 	.i2c_gate_ctrl			= i2c_gate_ctrl,
 #endif
 
+#if 0
 	.spi_read			= si2183_spi_read,
 	.spi_write			= si2183_spi_write,
-
+#endif
 
 };
 
