@@ -43,23 +43,17 @@ struct si2183_config {
 
 	/* TS clock gapped */
 	bool ts_clock_gapped;
-
-	/* Tuner control pins */
-#define SI2183_MP_NOT_USED	1
-#define SI2183_MP_A		2
-#define SI2183_MP_B		3
-#define SI2183_MP_C		4
-#define SI2183_MP_D		5
-	int fef_pin;
-	bool fef_inv;
-	int agc_pin;
-	bool ter_agc_inv;
-	bool sat_agc_inv;
+	/*agc*/
+	u8 agc_mode;
 
 	/*rf switch*/
 	void (*RF_switch)(struct i2c_adapter * i2c,u8 rf_in,u8 flag);
 	/*rf no.*/
 	u8 rf_in;
+	
+	//update the FW.
+	void (*write_properties) (struct i2c_adapter *i2c,u8 reg, u32 buf);
+	void (*read_properties) (struct i2c_adapter *i2c,u8 reg, u32 *buf);
 };
 
 #endif

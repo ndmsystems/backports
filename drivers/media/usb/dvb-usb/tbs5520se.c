@@ -219,19 +219,16 @@ static int tbs5520se_frontend_attach(struct dvb_usb_adapter *adap)
 	struct si2157_config si2157_config;
 	u8 buf[20];
 
+
 	/* attach frontend */
 	memset(&si2183_config,0,sizeof(si2183_config));
 	si2183_config.i2c_adapter = &adapter;
-	si2183_config.fe = &adap->fe_adap[0].fe;
+	si2183_config.fe = &adap->fe_adap[0].fe;	
 	si2183_config.ts_mode = SI2183_TS_PARALLEL;
 	si2183_config.ts_clock_gapped = true;
 	si2183_config.rf_in = 0;
 	si2183_config.RF_switch = NULL;
-	si2183_config.fef_pin = SI2183_MP_B;
-	si2183_config.fef_inv = 0;
-	si2183_config.agc_pin = SI2183_MP_D;
-	si2183_config.ter_agc_inv = 0;
-	si2183_config.sat_agc_inv = 1;
+	si2183_config.agc_mode = 0x5 ;
 	memset(&info, 0, sizeof(struct i2c_board_info));
 	strlcpy(info.type, "si2183", I2C_NAME_SIZE);
 	info.addr = 0x67;
@@ -254,34 +251,17 @@ static int tbs5520se_frontend_attach(struct dvb_usb_adapter *adap)
 	adap->fe_adap[0].fe2 = &adap->fe_adap[0]._fe2;
 	memcpy(adap->fe_adap[0].fe2, adap->fe_adap[0].fe, sizeof(struct dvb_frontend));
 
-	/* sat demod */
+	/* terrestrial tuner */
 	memset(adap->fe_adap[0].fe->ops.delsys, 0, MAX_DELSYS);
-	adap->fe_adap[0].fe->ops.delsys[0] = SYS_DVBS;
-	adap->fe_adap[0].fe->ops.delsys[1] = SYS_DVBS2;
-	adap->fe_adap[0].fe->ops.delsys[2] = SYS_DSS;
+	adap->fe_adap[0].fe->ops.delsys[0] = SYS_DVBT;
+	adap->fe_adap[0].fe->ops.delsys[1] = SYS_DVBT2;
+	adap->fe_adap[0].fe->ops.delsys[2] = SYS_DVBC_ANNEX_A;
+	adap->fe_adap[0].fe->ops.delsys[3] = SYS_ISDBT;
+	adap->fe_adap[0].fe->ops.delsys[4] = SYS_DVBC_ANNEX_B;
 
-	/* attach sat tuner */
-	if (!dvb_attach(av201x_attach, adap->fe_adap[0].fe, &tbs5520se_av201x_cfg,
-			adapter))
-			return -ENODEV;
-	buf[0] = 1;
-	buf[1] = 0;
-	tbs5520se_op_rw(d->udev, 0x8a, 0, 0,
-			buf, 2, TBS5520se_WRITE_MSG);
-	adap->fe_adap[0].fe->ops.set_voltage = tbs5520se_set_voltage;
-
-	/* ter/cab demod */
-	memset(adap->fe_adap[0].fe2->ops.delsys, 0, MAX_DELSYS);
-	adap->fe_adap[0].fe2->ops.delsys[0] = SYS_DVBT;
-	adap->fe_adap[0].fe2->ops.delsys[1] = SYS_DVBT2;
-	adap->fe_adap[0].fe2->ops.delsys[2] = SYS_DVBC_ANNEX_A;
-	adap->fe_adap[0].fe2->ops.delsys[3] = SYS_ISDBT;
-	adap->fe_adap[0].fe2->ops.delsys[4] = SYS_DVBC_ANNEX_B;
-	adap->fe_adap[0].fe2->id = 1;
-
-	/* attach ter/cab tuner */
+	/* attach ter tuner */
 	memset(&si2157_config, 0, sizeof(si2157_config));
-	si2157_config.fe = adap->fe_adap[0].fe2;
+	si2157_config.fe = adap->fe_adap[0].fe;
 	si2157_config.if_port = 1;
 	memset(&info, 0, sizeof(struct i2c_board_info));
 	strlcpy(info.type, "si2157", I2C_NAME_SIZE);
@@ -303,6 +283,26 @@ static int tbs5520se_frontend_attach(struct dvb_usb_adapter *adap)
 
 	st->i2c_client_tuner = client_tuner;
 
+	memset(adap->fe_adap[0].fe2->ops.delsys, 0, MAX_DELSYS);
+	adap->fe_adap[0].fe2->ops.delsys[0] = SYS_DVBS;
+	adap->fe_adap[0].fe2->ops.delsys[1] = SYS_DVBS2;
+	adap->fe_adap[0].fe2->ops.delsys[2] = SYS_DSS;
+	adap->fe_adap[0].fe2->id = 1;
+
+	if (dvb_attach(av201x_attach, adap->fe_adap[0].fe2, &tbs5520se_av201x_cfg,
+			adapter) == NULL) {
+		return -ENODEV;
+	}
+	else {
+		buf[0] = 1;
+		buf[1] = 0;
+		tbs5520se_op_rw(d->udev, 0x8a, 0, 0,
+					buf, 2, TBS5520se_WRITE_MSG);
+		
+		adap->fe_adap[0].fe2->ops.set_voltage = tbs5520se_set_voltage;
+		
+	}
+
 	buf[0] = 0;
 	buf[1] = 0;
 	tbs5520se_op_rw(d->udev, 0xb7, 0, 0,
@@ -311,6 +311,11 @@ static int tbs5520se_frontend_attach(struct dvb_usb_adapter *adap)
 	buf[1] = 1;
 	tbs5520se_op_rw(d->udev, 0x8a, 0, 0,
 			buf, 2, TBS5520se_WRITE_MSG);
+
+	strlcpy(adap->fe_adap[0].fe->ops.info.name,d->props.devices[0].name,52);
+	strcat(adap->fe_adap[0].fe->ops.info.name," DVB-T/T2/C/C2/ISDB-T");
+	strlcpy(adap->fe_adap[0].fe2->ops.info.name,d->props.devices[0].name,52);
+	strcat(adap->fe_adap[0].fe2->ops.info.name," DVB-S/S2/S2X");
 
 	return 0;
 }
@@ -433,7 +438,7 @@ static struct dvb_usb_device_properties tbs5520se_properties = {
 
 	.num_device_descs = 1,
 	.devices = {
-		{"TBS 5520se USB2.0",
+		{"TurboSight TBS 5520SE",
 			{&tbs5520se_table[0], NULL},
 			{NULL},
 		}
@@ -452,6 +457,7 @@ static int tbs5520se_probe(struct usb_interface *intf,
 
 static void tbs5520se_disconnect(struct usb_interface *intf)
 {
+#if 0
 	struct dvb_usb_device *d = usb_get_intfdata(intf);
 	struct tbs5520se_state *st = d->priv;
 	struct i2c_client *client;
@@ -469,7 +475,7 @@ static void tbs5520se_disconnect(struct usb_interface *intf)
 		module_put(client->dev.driver->owner);
 		i2c_unregister_device(client);
 	}
-
+#endif	
 	dvb_usb_device_exit(intf);
 }
 
@@ -497,7 +503,7 @@ static void __exit tbs5520se_module_exit(void)
 module_init(tbs5520se_module_init);
 module_exit(tbs5520se_module_exit);
 
-MODULE_AUTHOR("Davin <smiledavin@hotmail.com>");
-MODULE_DESCRIPTION("TurboSight TBS 5520se driver");
+MODULE_AUTHOR("Davin  <smiledavin@hotmail.com>");
+MODULE_DESCRIPTION("TurboSight TBS 5520SE driver");
 MODULE_VERSION("1.0");
 MODULE_LICENSE("GPL");
