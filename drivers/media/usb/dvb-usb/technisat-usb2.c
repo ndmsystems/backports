@@ -448,14 +448,18 @@ static int technisat_usb2_eeprom_lrc_read(struct dvb_usb_device *d,
 
 #define EEPROM_MAC_START 0x3f8
 #define EEPROM_MAC_TOTAL 8
+static const char defmac[6] = { 0x00, 0x08, 0xc9, 0xab, 0xcd, 0xef };
+
 static int technisat_usb2_read_mac_address(struct dvb_usb_device *d,
 		u8 mac[])
 {
 	u8 buf[EEPROM_MAC_TOTAL];
 
 	if (technisat_usb2_eeprom_lrc_read(d, EEPROM_MAC_START,
-				buf, EEPROM_MAC_TOTAL, 4) != 0)
-		return -ENODEV;
+				buf, EEPROM_MAC_TOTAL, 4) != 0) {
+		memcpy(mac, defmac, 6);
+		return 0;
+	}
 
 	memcpy(mac, buf, 6);
 	return 0;
