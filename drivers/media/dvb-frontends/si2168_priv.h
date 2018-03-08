@@ -45,6 +45,7 @@ struct si2168_dev {
 	bool active;
 	bool warm;
 	u8 ts_mode;
+	u8 ts_clock_mode;
 	bool ts_clock_inv;
 	bool ts_clock_gapped;
 	int fef_pin;

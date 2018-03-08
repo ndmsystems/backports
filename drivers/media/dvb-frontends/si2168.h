@@ -40,6 +40,12 @@ struct si2168_config {
 #define SI2168_TS_SERIAL	0x03
 	u8 ts_mode;
 
+	/* TS clock mode */
+#define SI2168_TS_CLK_AUTO_FIXED	0
+#define SI2168_TS_CLK_AUTO_ADAPT	1
+#define SI2168_TS_CLK_MANUAL		2
+	u8 ts_clock_mode;
+
 	/* TS clock inverted */
 	bool ts_clock_inv;
 
