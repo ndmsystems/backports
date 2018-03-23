@@ -832,6 +832,7 @@ static struct stb0899_config stb0899_config = {
 
 	.lo_clk	  = 76500000,
 	.hi_clk	  = 99000000,
+	.i2c_msg_fix = 0,
 
 	.ts_output_mode  = 0,	/* Use parallel mode */
 	.clock_polarity  = 0,

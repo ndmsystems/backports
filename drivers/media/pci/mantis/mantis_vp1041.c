@@ -277,6 +277,7 @@ static struct stb0899_config vp1041_stb0899_config = {
 
 	.lo_clk			= 76500000,
 	.hi_clk			= 99000000,
+	.i2c_msg_fix		= 0,
 
 	.esno_ave		= STB0899_DVBS2_ESNO_AVE,
 	.esno_quant		= STB0899_DVBS2_ESNO_QUANT,

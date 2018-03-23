@@ -1773,8 +1773,10 @@ static int dw2102_load_firmware(struct usb_device *dev,
 		}
 		/* init registers */
 		switch (le16_to_cpu(dev->descriptor.idProduct)) {
+#if 0
 		case USB_PID_TEVII_S650:
 			dw2104_properties.rc.core.rc_codes = RC_MAP_TEVII_NEC;
+#endif
 		case USB_PID_DW2104:
 			reset = 1;
 			dw210x_op_rw(dev, 0xc4, 0x0000, 0, &reset, 1,
@@ -1893,6 +1895,7 @@ static struct dvb_usb_device_properties dw2104_properties = {
 	.no_reconnect = 1,
 
 	.i2c_algo = &dw2104_i2c_algo,
+#if 0
 	.rc.core = {
 		.rc_interval = 150,
 		.rc_codes = RC_MAP_DM1105_NEC,
@@ -1900,7 +1903,7 @@ static struct dvb_usb_device_properties dw2104_properties = {
 		.allowed_protos   = RC_BIT_NEC,
 		.rc_query = dw2102_rc_query,
 	},
-
+#endif
 	.generic_bulk_ctrl_endpoint = 0x81,
 	/* parameter for the MPEG2-data transfer */
 	.num_adapters = 1,

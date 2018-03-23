@@ -320,6 +320,21 @@ u32 _stb0899_read_s2reg(struct stb0899_state *state,
 		.len	= 4
 	};
 
+	/* Workaround for Technisat SkyStar USB 2 HD CI */
+	struct i2c_msg msg[] = {
+		{
+			.addr	= state->config->demod_address,
+			.flags	= 0,
+			.buf	= buf_1,
+			.len	= 2
+		}, {
+			.addr	= state->config->demod_address,
+			.flags	= I2C_M_RD,
+			.buf	= buf,
+			.len	= 4
+		}
+	};
+
 	tmpaddr = stb0899_reg_offset & 0xff00;
 	if (!(stb0899_reg_offset & 0x8))
 		tmpaddr = stb0899_reg_offset | 0x20;
@@ -337,32 +352,48 @@ u32 _stb0899_read_s2reg(struct stb0899_state *state,
 	}
 
 	/* Dummy	*/
-	status = i2c_transfer(state->i2c, &msg_1, 1);
-	if (status < 1)
-		goto err;
+	if(state->config->i2c_msg_fix) {
+		status = i2c_transfer(state->i2c, msg, 2);
+		if (status < 2)
+			goto err;
+	} else {
+		status = i2c_transfer(state->i2c, &msg_1, 1);
+		if (status < 1)
+			goto err;
 
-	status = i2c_transfer(state->i2c, &msg_r, 1);
-	if (status < 1)
-		goto err;
+		status = i2c_transfer(state->i2c, &msg_r, 1);
+		if (status < 1)
+			goto err;
+	}
 
 	buf_1[0] = GETBYTE(stb0899_reg_offset, BYTE1);
 	buf_1[1] = GETBYTE(stb0899_reg_offset, BYTE0);
 
 	/* Actual	*/
-	status = i2c_transfer(state->i2c, &msg_1, 1);
-	if (status < 1) {
-		if (status != -ERESTARTSYS)
-			printk(KERN_ERR "%s ERR(2), Device=[0x%04x], Base address=[0x%08x], Offset=[0x%04x], Status=%d\n",
-			       __func__, stb0899_i2cdev, stb0899_base_addr, stb0899_reg_offset, status);
-		goto err;
-	}
+	if(state->config->i2c_msg_fix) {
+		status = i2c_transfer(state->i2c, msg, 2);
+		if (status < 2) {
+			if (status != -ERESTARTSYS)
+				printk(KERN_ERR "%s ERR(3), Device=[0x%04x], Base address=[0x%08x], Offset=[0x%04x], Status=%d\n",
+					__func__, stb0899_i2cdev, stb0899_base_addr, stb0899_reg_offset, status);
+			return status < 0 ? status : -EREMOTEIO;
+		}
+	} else {
+		status = i2c_transfer(state->i2c, &msg_1, 1);
+		if (status < 1) {
+			if (status != -ERESTARTSYS)
+				printk(KERN_ERR "%s ERR(2), Device=[0x%04x], Base address=[0x%08x], Offset=[0x%04x], Status=%d\n",
+					__func__, stb0899_i2cdev, stb0899_base_addr, stb0899_reg_offset, status);
+			goto err;
+		}
 
-	status = i2c_transfer(state->i2c, &msg_r, 1);
-	if (status < 1) {
-		if (status != -ERESTARTSYS)
-			printk(KERN_ERR "%s ERR(3), Device=[0x%04x], Base address=[0x%08x], Offset=[0x%04x], Status=%d\n",
-			       __func__, stb0899_i2cdev, stb0899_base_addr, stb0899_reg_offset, status);
-		return status < 0 ? status : -EREMOTEIO;
+		status = i2c_transfer(state->i2c, &msg_r, 1);
+		if (status < 1) {
+			if (status != -ERESTARTSYS)
+				printk(KERN_ERR "%s ERR(3), Device=[0x%04x], Base address=[0x%08x], Offset=[0x%04x], Status=%d\n",
+					__func__, stb0899_i2cdev, stb0899_base_addr, stb0899_reg_offset, status);
+			return status < 0 ? status : -EREMOTEIO;
+		}
 	}
 
 	data = MAKEWORD32(buf[3], buf[2], buf[1], buf[0]);
@@ -982,9 +1013,9 @@ static int stb0899_read_signal_strength(struct dvb_frontend *fe, u16 *strength)
 				val = (s32)(s8)STB0899_GETFIELD(AGCIQVALUE, reg);
 
 				*strength = stb0899_table_lookup(stb0899_dvbsrf_tab, ARRAY_SIZE(stb0899_dvbsrf_tab) - 1, val);
-				*strength += 750;
 				dprintk(state->verbose, FE_DEBUG, 1, "AGCIQVALUE = 0x%02x, C = %d * 0.1 dBm",
-					val & 0xff, *strength);
+					val & 0xff, *strength + 750);
+				*strength = ((*strength + 100000) / 1000) * 750;
 			}
 		}
 		break;
@@ -994,9 +1025,9 @@ static int stb0899_read_signal_strength(struct dvb_frontend *fe, u16 *strength)
 			val = STB0899_GETFIELD(IF_AGC_GAIN, reg);
 
 			*strength = stb0899_table_lookup(stb0899_dvbs2rf_tab, ARRAY_SIZE(stb0899_dvbs2rf_tab) - 1, val);
-			*strength += 950;
 			dprintk(state->verbose, FE_DEBUG, 1, "IF_AGC_GAIN = 0x%04x, C = %d * 0.1 dBm",
-				val & 0x3fff, *strength);
+				val & 0x3fff, *strength + 950);
+			*strength = ((*strength + 100000) / 1000) * 750;
 		}
 		break;
 	default:
@@ -1030,6 +1061,7 @@ static int stb0899_read_snr(struct dvb_frontend *fe, u16 *snr)
 				*snr = stb0899_table_lookup(stb0899_cn_tab, ARRAY_SIZE(stb0899_cn_tab) - 1, val);
 				dprintk(state->verbose, FE_DEBUG, 1, "NIR = 0x%02x%02x = %u, C/N = %d * 0.1 dBm\n",
 					buf[0], buf[1], val, *snr);
+				*snr = (*snr << 7) * 3;
 			}
 		}
 		break;
@@ -1054,6 +1086,7 @@ static int stb0899_read_snr(struct dvb_frontend *fe, u16 *snr)
 			*snr = val;
 			dprintk(state->verbose, FE_DEBUG, 1, "Es/N0 quant = %d (%d) estimate = %u (%d), C/N = %d * 0.1 dBm",
 				quant, quantn, est, estn, val);
+			*snr = (*snr << 7) * 8;
 		}
 		break;
 	default:
@@ -1583,7 +1616,26 @@ static int stb0899_get_frontend(struct dvb_frontend *fe)
 
 static enum dvbfe_algo stb0899_frontend_algo(struct dvb_frontend *fe)
 {
-	return DVBFE_ALGO_CUSTOM;
+	return DVBFE_ALGO_HW;
+}
+
+static int stb0899_set_frontend(struct dvb_frontend *fe)
+{
+	if (stb0899_search(fe) == DVBFE_ALGO_SEARCH_SUCCESS)
+		return 0;
+	return -EINVAL;
+}
+
+static int stb0899_tune(struct dvb_frontend *fe, bool re_tune,
+	unsigned int mode_flags, unsigned int *delay, enum fe_status *status)
+{
+	*delay = HZ / 5;
+	if (re_tune) {
+		int ret = stb0899_set_frontend(fe);
+		if (ret)
+			return ret;
+	}
+	return stb0899_read_status(fe, status);
 }
 
 static struct dvb_frontend_ops stb0899_ops = {
@@ -1611,8 +1663,10 @@ static struct dvb_frontend_ops stb0899_ops = {
 	.i2c_gate_ctrl			= stb0899_i2c_gate_ctrl,
 
 	.get_frontend_algo		= stb0899_frontend_algo,
-	.search				= stb0899_search,
+	.tune				= stb0899_tune,
+//	.search				= stb0899_search,
 	.get_frontend                   = stb0899_get_frontend,
+	.set_frontend                   = stb0899_set_frontend,
 
 
 	.read_status			= stb0899_read_status,

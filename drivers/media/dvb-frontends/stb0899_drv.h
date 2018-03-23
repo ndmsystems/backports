@@ -118,6 +118,7 @@ struct stb0899_config {
 //	int	inversion;
 	int	lo_clk;
 	int	hi_clk;
+	int	i2c_msg_fix;	/* Workaround for Technisat SkyStar USB 2 HD CI */
 
 	u32	esno_ave;
 	u32	esno_quant;

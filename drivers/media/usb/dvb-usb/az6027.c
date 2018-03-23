@@ -268,6 +268,7 @@ static struct stb0899_config az6027_stb0899_config = {
 
 	.lo_clk			= 76500000,
 	.hi_clk			= 99000000,
+	.i2c_msg_fix		= 0,
 
 	.esno_ave		= STB0899_DVBS2_ESNO_AVE,
 	.esno_quant		= STB0899_DVBS2_ESNO_QUANT,
@@ -905,11 +906,15 @@ static int az6027_frontend_tsbypass(struct dvb_usb_adapter *adap, int onoff)
 
 static int az6027_frontend_attach(struct dvb_usb_adapter *adap)
 {
+	struct dvb_usb_device *d = adap->dev;
 
 	az6027_frontend_poweron(adap);
 	az6027_frontend_reset(adap);
 
 	deb_info("adap = %p, dev = %p\n", adap, adap->dev);
+
+	az6027_stb0899_config.i2c_msg_fix = d->udev->descriptor.idVendor == USB_VID_TECHNISAT ? 1 : 0;
+
 	adap->fe_adap[0].fe = stb0899_attach(&az6027_stb0899_config, &adap->dev->i2c_adap);
 
 	if (adap->fe_adap[0].fe) {
