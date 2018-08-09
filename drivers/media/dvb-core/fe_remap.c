@@ -24,7 +24,9 @@
 
 static struct remap_frontend_id remap_frontend_id_list[] = {
 	{ "dvb_usb_rtl28xxu", "Realtek RTL2832 (DVB-T)", 0, 1 },
+	{ "dvb_usb_rtl28xxu", "Panasonic MN88472",       1, 0 },
 	{ "dvb_usb_rtl28xxu", "Panasonic MN88473",       1, 0 },
+	{ "dvb_usb_rtl28xxu", "Sony CXD2837ER DVB-T/T2/C demodulator",  1, 0 },
 	{ NULL, NULL,                                   -1, -1},
 };
 
