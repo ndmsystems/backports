@@ -79,6 +79,9 @@ obj-$(CPTCFG_DVB_USB_TECHNISAT_USB2) += dvb-usb-technisat-usb2.o
 dvb-usb-tbs5520se-objs := tbs5520se.o
 obj-$(CPTCFG_DVB_USB_TBS5520SE) += dvb-usb-tbs5520se.o
 
+dvb-usb-tbs5580-objs = tbs5580.o
+obj-$(CPTCFG_DVB_USB_TBS5580) += dvb-usb-tbs5580.o
+
 ccflags-y += -I$(backport_srctree)/drivers/media/dvb-core
 ccflags-y += -I$(backport_srctree)/drivers/media/dvb-frontends/
 # due to tuner-xc3028
