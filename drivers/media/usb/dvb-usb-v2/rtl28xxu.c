@@ -1302,7 +1302,8 @@ static int rtl2832u_tuner_attach(struct dvb_usb_adapter *adap)
 			fe = dvb_attach(r820t_attach, adap->fe[1],
 					dev->demod_i2c_adapter,
 					&rtl2832u_r828d_config);
-			adap->fe[1]->ops.read_signal_strength =
+			if (dev->slave_demod != SLAVE_DEMOD_CXD2837)
+				adap->fe[1]->ops.read_signal_strength =
 					adap->fe[1]->ops.tuner_ops.get_rf_strength;
 		}
 		break;
