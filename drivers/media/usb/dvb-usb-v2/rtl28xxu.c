@@ -541,7 +541,18 @@ tuner_found:
 
 	/* probe slave demod */
 	if (dev->tuner == TUNER_RTL2832_R828D) {
-		/* power on MN88472 demod on GPIO0 */
+		/* power off slave demod on GPIO0 to reset CXD2837ER */
+		ret = rtl28xxu_wr_reg_mask(d, SYS_GPIO_OUT_VAL, 0x00, 0x01);
+		if (ret)
+			goto err;
+
+		ret = rtl28xxu_wr_reg_mask(d, SYS_GPIO_OUT_EN, 0x00, 0x01);
+		if (ret)
+			goto err;
+
+		msleep(60);
+
+		/* power on slave demod on GPIO0 */
 		ret = rtl28xxu_wr_reg_mask(d, SYS_GPIO_OUT_VAL, 0x01, 0x01);
 		if (ret)
 			goto err;
